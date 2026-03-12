@@ -9,7 +9,7 @@ description: Use when creating new skills, editing existing skills, or verifying
 
 **Writing skills IS Test-Driven Development applied to process documentation.**
 
-**Personal skills live in agent-specific directories (`~/.claude/skills` for Claude Code, `~/.agents/skills/` for Codex)** 
+**Personal skills live in your plugin's `skills/` directory. Copilot CLI discovers them via `plugin.json`.**
 
 You write test cases (pressure scenarios with subagents), watch them fail (baseline behavior), write the skill (documentation), watch tests pass (agents comply), and refactor (close loopholes).
 
@@ -55,7 +55,7 @@ The entire skill creation process follows RED-GREEN-REFACTOR.
 **Don't create for:**
 - One-off solutions
 - Standard practices well-documented elsewhere
-- Project-specific conventions (put in CLAUDE.md)
+- Project-specific conventions (put in COPILOT.md or AGENTS.md)
 - Mechanical constraints (if it's enforceable with regex/validation, automate it—save documentation for judgment calls)
 
 ## Skill Types
@@ -595,7 +595,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 
 ## Skill Creation Checklist (TDD Adapted)
 
-**IMPORTANT: Use TodoWrite to create todos for EACH checklist item below.**
+**IMPORTANT: Create task tracking (checklist, SQLite, or markdown) for EACH checklist item below.**
 
 **RED Phase - Write Failing Test:**
 - [ ] Create pressure scenarios (3+ combined pressures for discipline skills)

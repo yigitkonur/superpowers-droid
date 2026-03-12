@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# PreToolUse hook for superpowers-copilot plugin
+# Enforces safety checks before destructive operations.
+# This is the ONLY hook type where output is actionable in Copilot CLI.
+# Output: {"permissionDecision":"deny","permissionDecisionReason":"..."} to block.
+
+set -euo pipefail
+
+INPUT=$(cat 2>/dev/null || echo '{}')
+
+TOOL_NAME=$(echo "$INPUT" | grep -o '"toolName":"[^"]*"' | head -1 | cut -d'"' -f4 2>/dev/null || echo "")
+TOOL_ARGS=$(echo "$INPUT" | grep -o '"toolArgs":"[^"]*"' | head -1 | cut -d'"' -f4 2>/dev/null || echo "")
+
+# Safety: block force-push to main/master
+if [ "$TOOL_NAME" = "bash" ]; then
+    if echo "$TOOL_ARGS" | grep -qE 'git\s+push.*--force.*(main|master)'; then
+        echo '{"permissionDecision":"deny","permissionDecisionReason":"Superpowers safety: force-push to main/master is blocked. Use a feature branch instead."}'
+        exit 0
+    fi
+
+    # Safety: block git reset --hard without worktree
+    if echo "$TOOL_ARGS" | grep -qE 'git\s+reset\s+--hard'; then
+        if ! git worktree list 2>/dev/null | grep -q "$(pwd)"; then
+            echo '{"permissionDecision":"deny","permissionDecisionReason":"Superpowers safety: git reset --hard outside a worktree is dangerous. Use the using-git-worktrees skill for isolated work."}'
+            exit 0
+        fi
+    fi
+fi
+
+# Allow everything else
+echo '{}'
+exit 0

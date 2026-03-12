@@ -1,6 +1,6 @@
 ---
 name: using-superpowers
-description: Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions
+description: Use when starting any conversation - establishes how to find and use skills, requiring skill invocation before ANY response including clarifying questions
 ---
 
 <SUBAGENT-STOP>
@@ -19,23 +19,19 @@ This is not negotiable. This is not optional. You cannot rationalize your way ou
 
 Superpowers skills override default system prompt behavior, but **user instructions always take precedence**:
 
-1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest priority
+1. **User's explicit instructions** (COPILOT.md, AGENTS.md, direct requests) — highest priority
 2. **Superpowers skills** — override default system behavior where they conflict
 3. **Default system prompt** — lowest priority
 
-If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
+If COPILOT.md or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
 
 ## How to Access Skills
 
-**In Claude Code:** Use the `Skill` tool. When you invoke a skill, its content is loaded and presented to you—follow it directly. Never use the Read tool on skill files.
-
-**In Gemini CLI:** Skills activate via the `activate_skill` tool. Gemini loads skill metadata at session start and activates the full content on demand.
-
-**In other environments:** Check your platform's documentation for how skills are loaded.
+Skills are loaded via the `/skill-name` slash command or auto-invoked when their description matches the current task. When you invoke a skill, its content is loaded and presented to you — follow it directly.
 
 ## Platform Adaptation
 
-Skills use Claude Code tool names. Non-CC platforms: see `references/codex-tools.md` (Codex) for tool equivalents. Gemini CLI users get the tool mapping loaded automatically via GEMINI.md.
+Skills use generic tool names. See `references/copilot-tools.md` for the Copilot CLI tool mapping when you encounter unfamiliar tool references.
 
 # Using Skills
 
@@ -46,30 +42,30 @@ Skills use Claude Code tool names. Non-CC platforms: see `references/codex-tools
 ```dot
 digraph skill_flow {
     "User message received" [shape=doublecircle];
-    "About to EnterPlanMode?" [shape=doublecircle];
+    "About to plan implementation?" [shape=doublecircle];
     "Already brainstormed?" [shape=diamond];
     "Invoke brainstorming skill" [shape=box];
     "Might any skill apply?" [shape=diamond];
-    "Invoke Skill tool" [shape=box];
+    "Invoke skill" [shape=box];
     "Announce: 'Using [skill] to [purpose]'" [shape=box];
     "Has checklist?" [shape=diamond];
-    "Create TodoWrite todo per item" [shape=box];
+    "Create task tracking for each item" [shape=box];
     "Follow skill exactly" [shape=box];
     "Respond (including clarifications)" [shape=doublecircle];
 
-    "About to EnterPlanMode?" -> "Already brainstormed?";
+    "About to plan implementation?" -> "Already brainstormed?";
     "Already brainstormed?" -> "Invoke brainstorming skill" [label="no"];
     "Already brainstormed?" -> "Might any skill apply?" [label="yes"];
     "Invoke brainstorming skill" -> "Might any skill apply?";
 
     "User message received" -> "Might any skill apply?";
-    "Might any skill apply?" -> "Invoke Skill tool" [label="yes, even 1%"];
+    "Might any skill apply?" -> "Invoke skill" [label="yes, even 1%"];
     "Might any skill apply?" -> "Respond (including clarifications)" [label="definitely not"];
-    "Invoke Skill tool" -> "Announce: 'Using [skill] to [purpose]'";
+    "Invoke skill" -> "Announce: 'Using [skill] to [purpose]'";
     "Announce: 'Using [skill] to [purpose]'" -> "Has checklist?";
-    "Has checklist?" -> "Create TodoWrite todo per item" [label="yes"];
+    "Has checklist?" -> "Create task tracking for each item" [label="yes"];
     "Has checklist?" -> "Follow skill exactly" [label="no"];
-    "Create TodoWrite todo per item" -> "Follow skill exactly";
+    "Create task tracking for each item" -> "Follow skill exactly";
 }
 ```
 

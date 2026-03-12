@@ -1,159 +1,148 @@
-# Superpowers
+# Superpowers for Copilot CLI
 
-Superpowers is a complete software development workflow for your coding agents, built on top of a set of composable "skills" and some initial instructions that make sure your agent uses them.
+A complete software development workflow for [GitHub Copilot CLI](https://docs.github.com/en/copilot/github-copilot-in-the-cli), built on composable "skills" that enforce TDD, systematic debugging, design-first development, and subagent-driven execution.
 
-## How it works
+Forked from [obra/superpowers](https://github.com/obra/superpowers) and reimplemented for Copilot CLI's native features: hooks, `task` subagent dispatch, `/fleet` parallel execution, and SQLite-based task tracking.
 
-It starts from the moment you fire up your coding agent. As soon as it sees that you're building something, it *doesn't* just jump into trying to write code. Instead, it steps back and asks you what you're really trying to do. 
+## How It Works
 
-Once it's teased a spec out of the conversation, it shows it to you in chunks short enough to actually read and digest. 
+When you start your Copilot CLI session with this plugin installed, it doesn't just jump into writing code. Instead:
 
-After you've signed off on the design, your agent puts together an implementation plan that's clear enough for an enthusiastic junior engineer with poor taste, no judgement, no project context, and an aversion to testing to follow. It emphasizes true red/green TDD, YAGNI (You Aren't Gonna Need It), and DRY. 
+1. It steps back and asks what you're really trying to do (**brainstorming**)
+2. It creates a design spec and gets your approval
+3. It writes a detailed implementation plan with bite-sized TDD tasks (**writing-plans**)
+4. It dispatches subagents per task with two-stage code review (**subagent-driven-development**)
+5. It verifies everything works before claiming completion (**verification-before-completion**)
 
-Next up, once you say "go", it launches a *subagent-driven-development* process, having agents work through each engineering task, inspecting and reviewing their work, and continuing forward. It's not uncommon for Claude to be able to work autonomously for a couple hours at a time without deviating from the plan you put together.
-
-There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your coding agent just has Superpowers.
-
-
-## Sponsorship
-
-If Superpowers has helped you do stuff that makes money and you are so inclined, I'd greatly appreciate it if you'd consider [sponsoring my opensource work](https://github.com/sponsors/obra).
-
-Thanks! 
-
-- Jesse
-
+Skills trigger automatically based on context. Your coding agent just has Superpowers.
 
 ## Installation
 
-**Note:** Installation differs by platform. Claude Code or Cursor have built-in plugin marketplaces. Codex and OpenCode require manual setup.
-
-### Claude Code Official Marketplace
-
-Superpowers is available via the [official Claude plugin marketplace](https://claude.com/plugins/superpowers)
-
-Install the plugin from Claude marketplace:
+### From Source (Plugin Install)
 
 ```bash
-/plugin install superpowers@claude-plugins-official
-```
+# Clone the repository
+git clone https://github.com/yigitkonur/superpowers-copilot.git
 
-### Claude Code (via Plugin Marketplace)
-
-In Claude Code, register the marketplace first:
-
-```bash
-/plugin marketplace add obra/superpowers-marketplace
-```
-
-Then install the plugin from this marketplace:
-
-```bash
-/plugin install superpowers@superpowers-marketplace
-```
-
-### Cursor (via Plugin Marketplace)
-
-In Cursor Agent chat, install from marketplace:
-
-```text
-/add-plugin superpowers
-```
-
-or search for "superpowers" in the plugin marketplace.
-
-### Codex
-
-Tell Codex:
-
-```
-Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.codex/INSTALL.md
-```
-
-**Detailed docs:** [docs/README.codex.md](docs/README.codex.md)
-
-### OpenCode
-
-Tell OpenCode:
-
-```
-Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.opencode/INSTALL.md
-```
-
-**Detailed docs:** [docs/README.opencode.md](docs/README.opencode.md)
-
-### Gemini CLI
-
-```bash
-gemini extensions install https://github.com/obra/superpowers
-```
-
-To update:
-
-```bash
-gemini extensions update superpowers
+# Copilot CLI discovers plugins via plugin.json in the repo root
+# Point your session to the plugin directory, or symlink it:
+ln -s /path/to/superpowers-copilot ~/.copilot-cli/plugins/superpowers
 ```
 
 ### Verify Installation
 
-Start a new session in your chosen platform and ask for something that should trigger a skill (for example, "help me plan this feature" or "let's debug this issue"). The agent should automatically invoke the relevant superpowers skill.
+Start a new Copilot CLI session and ask for something that should trigger a skill:
+
+```
+"Help me plan this feature"     → triggers brainstorming
+"Let's debug this issue"        → triggers systematic-debugging
+"Fix this bug"                  → triggers systematic-debugging + TDD
+```
+
+The agent should automatically invoke the relevant superpowers skill.
 
 ## The Basic Workflow
 
-1. **brainstorming** - Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves design document.
+1. **brainstorming** — Refines ideas through questions, explores alternatives, presents design for validation
+2. **using-git-worktrees** — Creates isolated workspace on new branch, verifies clean test baseline
+3. **writing-plans** — Breaks work into bite-sized TDD tasks (2-5 min each) with exact file paths and code
+4. **subagent-driven-development** — Dispatches fresh `task` subagent per task with two-stage review
+5. **test-driven-development** — RED-GREEN-REFACTOR: failing test → minimal code → refactor
+6. **requesting-code-review** — Dispatches code-reviewer agent between tasks
+7. **finishing-a-development-branch** — Verifies tests, presents merge/PR/keep/discard options
 
-2. **using-git-worktrees** - Activates after design approval. Creates isolated workspace on new branch, runs project setup, verifies clean test baseline.
+## Copilot CLI Features
 
-3. **writing-plans** - Activates with approved design. Breaks work into bite-sized tasks (2-5 minutes each). Every task has exact file paths, complete code, verification steps.
+This fork leverages Copilot CLI-specific capabilities:
 
-4. **subagent-driven-development** or **executing-plans** - Activates with plan. Dispatches fresh subagent per task with two-stage review (spec compliance, then code quality), or executes in batches with human checkpoints.
-
-5. **test-driven-development** - Activates during implementation. Enforces RED-GREEN-REFACTOR: write failing test, watch it fail, write minimal code, watch it pass, commit. Deletes code written before tests.
-
-6. **requesting-code-review** - Activates between tasks. Reviews against plan, reports issues by severity. Critical issues block progress.
-
-7. **finishing-a-development-branch** - Activates when tasks complete. Verifies tests, presents options (merge/PR/keep/discard), cleans up worktree.
-
-**The agent checks for relevant skills before any task.** Mandatory workflows, not suggestions.
+| Feature | How Superpowers Uses It |
+|---------|------------------------|
+| **`task` tool** | Subagent dispatch for implementers, reviewers, and spec checkers |
+| **`/fleet` command** | Parallel execution of independent tasks with dependency-aware scheduling |
+| **Hooks (`hooks.json`)** | Session-start prompt injection, pre-tool-use safety checks, error logging |
+| **Prompt hooks** | Context injection that actually works (unlike bash output which is ignored) |
+| **SQLite task tracking** | Native task management — ask the agent to track tasks and it creates SQLite |
+| **Multi-model subagents** | Assign cheap models for mechanical tasks, capable models for review |
+| **Safety hooks** | Blocks force-push to main/master and `git reset --hard` outside worktrees |
 
 ## What's Inside
 
 ### Skills Library
 
-**Testing**
-- **test-driven-development** - RED-GREEN-REFACTOR cycle (includes testing anti-patterns reference)
+**Core Workflow**
+- **brainstorming** — Socratic design refinement before coding
+- **writing-plans** — Detailed implementation plans with TDD structure
+- **executing-plans** — Batch execution with checkpoints (no subagents)
+- **subagent-driven-development** — Fast iteration with two-stage review
+
+**Testing & Quality**
+- **test-driven-development** — RED-GREEN-REFACTOR cycle
+- **verification-before-completion** — Evidence before claims
+- **requesting-code-review** — Pre-review dispatch to code-reviewer agent
+- **receiving-code-review** — Technical evaluation of feedback
 
 **Debugging**
-- **systematic-debugging** - 4-phase root cause process (includes root-cause-tracing, defense-in-depth, condition-based-waiting techniques)
-- **verification-before-completion** - Ensure it's actually fixed
+- **systematic-debugging** — 4-phase root cause process
+- **dispatching-parallel-agents** — Concurrent investigation of independent failures
 
-**Collaboration** 
-- **brainstorming** - Socratic design refinement
-- **writing-plans** - Detailed implementation plans
-- **executing-plans** - Batch execution with checkpoints
-- **dispatching-parallel-agents** - Concurrent subagent workflows
-- **requesting-code-review** - Pre-review checklist
-- **receiving-code-review** - Responding to feedback
-- **using-git-worktrees** - Parallel development branches
-- **finishing-a-development-branch** - Merge/PR decision workflow
-- **subagent-driven-development** - Fast iteration with two-stage review (spec compliance, then code quality)
+**Git & Integration**
+- **using-git-worktrees** — Parallel development branches
+- **finishing-a-development-branch** — Merge/PR decision workflow
 
 **Meta**
-- **writing-skills** - Create new skills following best practices (includes testing methodology)
-- **using-superpowers** - Introduction to the skills system
+- **writing-skills** — Create new skills with TDD methodology
+- **using-superpowers** — Introduction and routing layer
 
-## Philosophy
+### Agents
 
-- **Test-Driven Development** - Write tests first, always
-- **Systematic over ad-hoc** - Process over guessing
-- **Complexity reduction** - Simplicity as primary goal
-- **Evidence over claims** - Verify before declaring success
+- **code-reviewer** — Dispatched as subagent for code quality review
 
-Read more: [Superpowers for Claude Code](https://blog.fsck.com/2025/10/09/superpowers/)
+### Hooks
+
+- **session-start** — Legacy detection, session logging
+- **pre-tool-use** — Safety: blocks force-push and dangerous git operations
+- **error-occurred** — Logs errors for systematic-debugging context
+- **prompt hook** — Injects skill awareness into every session
+
+## Three Iron Laws
+
+1. **TDD**: No production code without a failing test first. Code before test = delete it.
+2. **Root Cause First**: No fixes without Phase 1 investigation. 3+ failed fixes = escalate.
+3. **Evidence Before Claims**: No "done"/"fixed"/"passing" without running verification fresh.
+
+## Project Structure
+
+```
+superpowers-copilot/
+├── plugin.json              # Copilot CLI plugin manifest
+├── hooks.json               # Hook definitions (prompt + command hooks)
+├── COPILOT.md               # Project instructions template
+├── agents/
+│   └── code-reviewer.agent.md
+├── hooks/
+│   ├── session-start        # Session startup (side effects only)
+│   ├── pre-tool-use         # Safety checks (actionable output)
+│   ├── error-occurred       # Error logging
+│   └── run-hook.cmd         # Cross-platform wrapper
+├── skills/
+│   ├── using-superpowers/   # Entry point + tool mapping
+│   ├── brainstorming/       # Design phase (includes visual companion)
+│   ├── writing-plans/       # Planning phase
+│   ├── subagent-driven-development/  # Execution with review
+│   ├── executing-plans/     # Single-session execution
+│   ├── test-driven-development/     # TDD enforcement
+│   ├── systematic-debugging/        # Root cause process
+│   ├── dispatching-parallel-agents/ # Parallel subagent dispatch
+│   ├── requesting-code-review/      # Review dispatch
+│   ├── receiving-code-review/       # Review reception
+│   ├── verification-before-completion/  # Evidence gates
+│   ├── using-git-worktrees/         # Workspace isolation
+│   ├── finishing-a-development-branch/  # Completion workflow
+│   └── writing-skills/              # Skill creation methodology
+└── commands/                # Deprecated slash commands
+```
 
 ## Contributing
-
-Skills live directly in this repository. To contribute:
 
 1. Fork the repository
 2. Create a branch for your skill
@@ -162,19 +151,10 @@ Skills live directly in this repository. To contribute:
 
 See `skills/writing-skills/SKILL.md` for the complete guide.
 
-## Updating
+## Credits
 
-Skills update automatically when you update the plugin:
-
-```bash
-/plugin update superpowers
-```
+Based on [Superpowers](https://github.com/obra/superpowers) by [Jesse Vincent](https://github.com/obra). Original blog post: [Superpowers for Claude Code](https://blog.fsck.com/2025/10/09/superpowers/).
 
 ## License
 
-MIT License - see LICENSE file for details
-
-## Support
-
-- **Issues**: https://github.com/obra/superpowers/issues
-- **Marketplace**: https://github.com/obra/superpowers-marketplace
+MIT License — see LICENSE file for details.

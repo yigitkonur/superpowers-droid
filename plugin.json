@@ -1,0 +1,18 @@
+{
+  "name": "superpowers",
+  "description": "Agentic skills framework for GitHub Copilot CLI: TDD, debugging, collaboration patterns, and proven development workflows",
+  "version": "1.0.0",
+  "author": {
+    "name": "Yigit Konur",
+    "url": "https://github.com/yigitkonur"
+  },
+  "homepage": "https://github.com/yigitkonur/superpowers-copilot",
+  "repository": "https://github.com/yigitkonur/superpowers-copilot",
+  "license": "MIT",
+  "keywords": ["skills", "tdd", "debugging", "collaboration", "best-practices", "workflows", "copilot-cli", "agent-skills"],
+  "category": "workflow",
+  "agents": "agents/",
+  "skills": "skills/",
+  "commands": "commands/",
+  "hooks": "hooks.json"
+}

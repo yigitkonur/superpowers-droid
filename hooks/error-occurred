@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# ErrorOccurred hook for superpowers-copilot plugin
+# Logs errors to .superpowers/errors.log for systematic-debugging context.
+# Output is ignored by Copilot CLI — this is for side effects only.
+
+set -euo pipefail
+
+INPUT=$(cat 2>/dev/null || echo '{}')
+
+# Extract error details
+ERROR_MSG=$(echo "$INPUT" | grep -o '"message":"[^"]*"' | head -1 | cut -d'"' -f4 2>/dev/null || echo "unknown")
+ERROR_NAME=$(echo "$INPUT" | grep -o '"name":"[^"]*"' | head -1 | cut -d'"' -f4 2>/dev/null || echo "unknown")
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+CWD=$(echo "$INPUT" | grep -o '"cwd":"[^"]*"' | head -1 | cut -d'"' -f4 2>/dev/null || pwd)
+
+# Create log directory if it doesn't exist
+LOG_DIR="${CWD}/.superpowers"
+mkdir -p "$LOG_DIR" 2>/dev/null || true
+
+# Append to error log (useful for systematic-debugging Phase 1)
+echo "[${TIMESTAMP}] ${ERROR_NAME}: ${ERROR_MSG}" >> "${LOG_DIR}/errors.log" 2>/dev/null || true
+
+exit 0

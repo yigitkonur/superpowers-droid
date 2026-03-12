@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "./hooks/session-start",
+        "powershell": "./hooks/run-hook.cmd session-start",
+        "cwd": ".",
+        "timeoutSec": 10,
+        "comment": "Check for legacy installations and log session start"
+      },
+      {
+        "type": "prompt",
+        "prompt": "You have superpowers skills installed. Before responding to ANY task, check if a skill applies by reviewing your available skills. If there is even a 1% chance a skill is relevant, use it. Skills determine HOW to approach work — brainstorming before building, debugging before fixing, TDD before coding. Run /skills list if unsure what's available."
+      }
+    ],
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "./hooks/pre-tool-use",
+        "powershell": "./hooks/run-hook.cmd pre-tool-use",
+        "cwd": ".",
+        "timeoutSec": 5,
+        "comment": "Safety check: deny destructive operations on main branch without confirmation"
+      }
+    ],
+    "errorOccurred": [
+      {
+        "type": "command",
+        "bash": "./hooks/error-occurred",
+        "powershell": "./hooks/run-hook.cmd error-occurred",
+        "cwd": ".",
+        "timeoutSec": 5,
+        "comment": "Log errors for systematic-debugging skill context"
+      }
+    ]
+  }
+}
