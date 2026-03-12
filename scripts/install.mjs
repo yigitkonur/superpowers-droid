@@ -27,7 +27,6 @@ import { homedir } from "node:os";
 // ── constants ──────────────────────────────────────────────────────────────────
 
 const REPO = "https://github.com/yigitkonur/superpowers-droid.git";
-const MARKETPLACE_REPO = "yigitkonur/superpowers-droid";
 const MARKETPLACE_NAME = "superpowers-droid";
 const PLUGIN_NAME = "superpowers";
 
@@ -188,7 +187,7 @@ function installViaPlugin(scope) {
   // Register marketplace if not already
   if (!isMarketplaceRegistered()) {
     ok("Registering superpowers-droid marketplace...");
-    const result = run(`droid plugin marketplace add ${MARKETPLACE_REPO} 2>&1`);
+    const result = run(`droid plugin marketplace add ${REPO} 2>&1`);
     if (result === null) {
       warn("Could not register marketplace — falling back to manual install");
       return false;
@@ -224,6 +223,24 @@ function uninstallViaPlugin() {
   return true;
 }
 
+// ── safety ──────────────────────────────────────────────────────────────────
+
+function isSafeToDelete(dir) {
+  // Never delete the directory we're running from
+  const scriptDir = resolve(import.meta.dirname, "..");
+  const absDir = resolve(dir);
+  if (absDir === scriptDir || scriptDir.startsWith(absDir + "/")) {
+    fail(`Refusing to delete ${absDir} — installer is running from here`);
+    return false;
+  }
+  // Never delete cwd
+  if (absDir === resolve(process.cwd())) {
+    fail(`Refusing to delete ${absDir} — it is the current working directory`);
+    return false;
+  }
+  return true;
+}
+
 // ── manual install (clone) ─────────────────────────────────────────────────────
 
 function manualClone(targetDir) {
@@ -231,10 +248,14 @@ function manualClone(targetDir) {
     ok("Existing install detected — pulling latest");
     const result = run(`git -C "${targetDir}" pull --ff-only 2>&1`);
     if (result === null) {
-      warn("Pull failed — fresh clone");
-      rmSync(targetDir, { recursive: true, force: true });
-      run(`git clone --depth 1 "${REPO}" "${targetDir}"`);
-      ok("Fresh clone complete");
+      warn("Pull failed — will attempt fresh clone");
+      if (isSafeToDelete(targetDir)) {
+        rmSync(targetDir, { recursive: true, force: true });
+        run(`git clone --depth 1 "${REPO}" "${targetDir}"`);
+        ok("Fresh clone complete");
+      } else {
+        fail("Cannot replace directory — try uninstalling first");
+      }
     } else {
       ok("Updated to latest");
     }
@@ -355,7 +376,7 @@ async function install(scope, nonInteractive = false) {
     if (choice === "reinstall") {
       if (existing.method === "plugin" && hasDroid()) {
         uninstallViaPlugin();
-      } else if (existing.path !== "(managed by droid)") {
+      } else if (existing.path !== "(managed by droid)" && isSafeToDelete(existing.path)) {
         rmSync(existing.path, { recursive: true, force: true });
         ok("Removed existing install");
       }
@@ -368,42 +389,35 @@ async function install(scope, nonInteractive = false) {
     }
   }
 
-  const totalSteps = hasDroid() ? 4 : 5;
-  let currentStep = 0;
-
   // [1] Prerequisites
-  step(++currentStep, totalSteps, "Checking prerequisites...");
+  step(1, 3, "Checking prerequisites...");
   if (!checkPrereqs()) { fail("Fix issues above and retry."); process.exit(1); }
 
   // [2] Install
-  step(++currentStep, totalSteps, "Installing superpowers...");
+  step(2, 3, "Installing superpowers...");
 
   let installDir;
+  let usedPluginSystem = false;
   if (hasDroid()) {
-    // Try plugin system first
     const pluginOk = installViaPlugin(scope);
     if (pluginOk) {
       installDir = "(managed by droid plugin system)";
+      usedPluginSystem = true;
     } else {
-      // Fallback to manual
       installDir = scope === "user" ? MANUAL_USER_DIR : MANUAL_PROJECT_DIR(process.cwd());
       manualClone(installDir);
+      setupHooks(installDir);
+      verifyPlugin(installDir);
     }
   } else {
-    // No droid — manual install
     installDir = scope === "user" ? MANUAL_USER_DIR : MANUAL_PROJECT_DIR(process.cwd());
     manualClone(installDir);
-  }
-
-  // [3] Setup hooks (manual install only)
-  if (installDir && !installDir.startsWith("(")) {
-    step(++currentStep, totalSteps, "Setting up hooks...");
     setupHooks(installDir);
     verifyPlugin(installDir);
   }
 
-  // [4/5] AGENTS.md
-  step(++currentStep, totalSteps, "Configuring AGENTS.md...");
+  // [3] AGENTS.md
+  step(3, 3, "Configuring AGENTS.md...");
   addToAgentsMd(scope);
 
   // Done
@@ -453,8 +467,10 @@ async function uninstall(scope, nonInteractive = false) {
   if (existing.method === "plugin" && hasDroid()) {
     uninstallViaPlugin();
   } else if (existing.path && existing.path !== "(managed by droid)") {
-    rmSync(existing.path, { recursive: true, force: true });
-    ok(`Removed ${existing.path}`);
+    if (isSafeToDelete(existing.path)) {
+      rmSync(existing.path, { recursive: true, force: true });
+      ok(`Removed ${existing.path}`);
+    }
   }
 
   // [2] Clean AGENTS.md
