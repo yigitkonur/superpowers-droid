@@ -1140,8 +1140,8 @@ Before sharing a Skill, verify:
     Create your first Skill
   </Card>
 
-  <Card title="Use Skills in Claude Code" icon="terminal" href="/en/docs/claude-code/skills">
-    Create and manage Skills in Claude Code
+  <Card title="Use Skills in Factory Droid" icon="terminal" href="/en/docs/claude-code/skills">
+    Create and manage Skills in Factory Droid
   </Card>
 
   <Card title="Use Skills with the API" icon="code" href="/en/api/skills-guide">

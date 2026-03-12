@@ -1,6 +1,6 @@
 # Plan Document Reviewer Prompt Template
 
-Use this template when dispatching a plan document reviewer subagent.
+Use this template when dispatching a plan document reviewer droid.
 
 **Purpose:** Verify the plan chunk is complete, matches the spec, and has proper task decomposition.
 

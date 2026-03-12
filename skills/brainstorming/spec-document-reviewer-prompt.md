@@ -1,6 +1,6 @@
 # Spec Document Reviewer Prompt Template
 
-Use this template when dispatching a spec document reviewer subagent.
+Use this template when dispatching a spec document reviewer droid.
 
 **Purpose:** Verify the spec is complete, consistent, and ready for implementation planning.
 

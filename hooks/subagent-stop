@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# SubagentStop hook for superpowers plugin (Factory Droid edition)
+# Triggered when a dispatched droid completes its task.
+# Provides context about the completed droid to help the controller
+# decide next steps (e.g., dispatch reviewer, mark task complete).
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Escape string for JSON embedding
+escape_for_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+reminder="After a droid completes work, follow the superpowers workflow:\\n\\n1. If this was an **implementer** droid: dispatch the **spec-reviewer** droid to verify spec compliance\\n2. If this was a **spec-reviewer** droid and it passed: dispatch the **code-quality-reviewer** droid\\n3. If this was a **spec-reviewer** or **code-quality-reviewer** droid and it found issues: dispatch the implementer again to fix them\\n4. If this was the final **code-reviewer** droid: proceed to **finishing-a-development-branch**\\n5. Mark completed tasks in TodoWrite\\n\\nDo NOT skip review stages. Do NOT proceed with unfixed issues."
+
+reminder_escaped=$(escape_for_json "$reminder")
+
+# Output context injection
+if [ -n "${DROID_PLUGIN_ROOT:-}" ]; then
+  cat <<EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SubagentStop",
+    "additionalContext": "${reminder_escaped}"
+  }
+}
+EOF
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+  cat <<EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SubagentStop",
+    "additionalContext": "${reminder_escaped}"
+  }
+}
+EOF
+else
+  cat <<EOF
+{
+  "additional_context": "${reminder_escaped}"
+}
+EOF
+fi
+
+exit 0

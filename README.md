@@ -1,180 +1,183 @@
-# Superpowers
+# superpowers-droid
 
-Superpowers is a complete software development workflow for your coding agents, built on top of a set of composable "skills" and some initial instructions that make sure your agent uses them.
+> A [Factory Droid](https://www.factory.ai/) fork of [@obra](https://github.com/obra)'s [superpowers](https://github.com/obra/superpowers) — the composable skills framework that turns coding agents into disciplined engineers.
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/yigitkonur/superpowers-droid/main/install.sh)"
+```
+
+The installer is interactive — it checks prerequisites, asks user-level vs. project-level, and shows each step. Safe to re-run. [Details →](docs/droid/06-installation.md)
+
+---
+
+## Why this fork
+
+[Superpowers](https://github.com/obra/superpowers) by [@obra](https://github.com/obra) is a complete development workflow for coding agents: brainstorming → planning → TDD → code review → verification, all orchestrated through composable skills that auto-activate based on context.
+
+The original targets **Claude Code**. This fork adapts it for **Factory Droid**, which exposes capabilities Claude Code doesn't have:
+
+```
+CLAUDE CODE (original)                   FACTORY DROID (this fork)
+══════════════════════                   ═════════════════════════
+
+  1 generic agent                          5 specialized droids
+  (full tool access)                       (tool-restricted)
+
+  ┌──────────────────┐                    ┌──────────────────────┐
+  │  code-reviewer   │                    │  code-reviewer       │
+  │  can read files  │                    │  tools: read-only    │
+  │  can edit files  │◄── problem         │  reasoningEffort: hi │
+  │  can run code    │                    ├──────────────────────┤
+  │  can delete files│                    │  spec-reviewer       │
+  └──────────────────┘                    │  tools: read-only    │
+                                          ├──────────────────────┤
+  No reasoning control                    │  code-quality-rev.   │
+  No worktree flag                        │  tools: read-only    │
+  No SubagentStop hook                    ├──────────────────────┤
+  No Create-PR tool                       │  plan-reviewer       │
+                                          │  tools: read-only    │
+                                          ├──────────────────────┤
+                                          │  implementer         │
+                                          │  tools: full         │
+                                          │  reasoningEffort: med│
+                                          └──────────────────────┘
+
+                                          + droid --worktree
+                                          + SubagentStop hook
+                                          + Create-PR tool
+```
+
+[Full changelog →](docs/droid/01-why-this-fork.md)
 
 ## How it works
 
-It starts from the moment you fire up your coding agent. As soon as it sees that you're building something, it *doesn't* just jump into trying to write code. Instead, it steps back and asks you what you're really trying to do. 
+Skills auto-activate when your task matches their trigger. You don't invoke them manually — the agent checks for applicable skills before every response.
 
-Once it's teased a spec out of the conversation, it shows it to you in chunks short enough to actually read and digest. 
+```
+User: "Build a login page"
+     │
+     ▼
+ brainstorming ──→ Questions, alternatives, design doc
+     │
+     ▼
+ writing-plans ──→ Detailed tasks (2-5 min each, with file paths)
+     │
+     ▼
+ using-git-worktrees ──→ droid --worktree login
+     │
+     ▼
+ subagent-driven-development
+     │
+     ├──→ implementer droid ──→ builds task, writes tests, commits
+     │         │
+     │    spec-reviewer droid ──→ "does it match the spec?" (read-only)
+     │         │
+     │    code-quality-reviewer ──→ "is it well-built?" (read-only)
+     │         │
+     │    SubagentStop hook ──→ reminds review workflow
+     │
+     ▼ (repeat per task)
+ finishing-a-development-branch ──→ tests pass → Create-PR
+```
 
-After you've signed off on the design, your agent puts together an implementation plan that's clear enough for an enthusiastic junior engineer with poor taste, no judgement, no project context, and an aversion to testing to follow. It emphasizes true red/green TDD, YAGNI (You Aren't Gonna Need It), and DRY. 
+[Architecture details →](docs/droid/02-architecture.md)
 
-Next up, once you say "go", it launches a *subagent-driven-development* process, having agents work through each engineering task, inspecting and reviewing their work, and continuing forward. It's not uncommon for Claude to be able to work autonomously for a couple hours at a time without deviating from the plan you put together.
+## What's different from Droid's native sub-agents
 
-There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your coding agent just has Superpowers.
+Droid's built-in `Task` tool dispatches sub-agents. Superpowers adds the **workflow** on top:
 
+| | Native `Task` only | With superpowers |
+|---|---|---|
+| Design phase | None | Socratic brainstorming |
+| Task planning | Ad-hoc | Structured 2-5 min tasks |
+| Review | Optional | Mandatory two-stage (spec → quality) |
+| Reviewer tools | Full access | `read-only` — can't accidentally modify |
+| Test discipline | Suggested | Enforced RED-GREEN-REFACTOR |
+| Completion claims | Trust agent's word | Evidence required (fresh test run) |
 
-## Sponsorship
+[Detailed comparison →](docs/droid/05-vs-native-subagents.md)
 
-If Superpowers has helped you do stuff that makes money and you are so inclined, I'd greatly appreciate it if you'd consider [sponsoring my opensource work](https://github.com/sponsors/obra).
+## Install / uninstall
 
-Thanks! 
-
-- Jesse
-
-
-## Installation
-
-**Note:** Installation differs by platform. Claude Code or Cursor have built-in plugin marketplaces. Codex and OpenCode require manual setup.
-
-### Claude Code Official Marketplace
-
-Superpowers is available via the [official Claude plugin marketplace](https://claude.com/plugins/superpowers)
-
-Install the plugin from Claude marketplace:
+**One-liner** (macOS):
 
 ```bash
-/plugin install superpowers@claude-plugins-official
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/yigitkonur/superpowers-droid/main/install.sh)"
 ```
 
-### Claude Code (via Plugin Marketplace)
-
-In Claude Code, register the marketplace first:
+**Uninstall:**
 
 ```bash
-/plugin marketplace add obra/superpowers-marketplace
+node ~/.factory/superpowers-droid/scripts/install.mjs --uninstall
 ```
 
-Then install the plugin from this marketplace:
+**Manual:**
 
 ```bash
-/plugin install superpowers@superpowers-marketplace
+git clone https://github.com/yigitkonur/superpowers-droid ~/.factory/superpowers-droid
+chmod +x ~/.factory/superpowers-droid/hooks/*
 ```
 
-### Cursor (via Plugin Marketplace)
+The Node.js installer is interactive, shows progress per step, and is idempotent — safe for re-installs with update/reinstall/cancel options.
 
-In Cursor Agent chat, install from marketplace:
+[Installation guide →](docs/droid/06-installation.md)
 
-```text
-/add-plugin superpowers
-```
+## Skills
 
-or search for "superpowers" in the plugin marketplace.
+14 composable skills, auto-activating based on context:
 
-### Codex
+| Skill | Trigger | Purpose |
+|-------|---------|---------|
+| `brainstorming` | Creative work | Socratic design refinement |
+| `writing-plans` | Design approved | Detailed implementation tasks |
+| `using-git-worktrees` | Plan ready | Isolated workspace (`droid --worktree`) |
+| `subagent-driven-development` | Plan ready | Fresh droid per task + two-stage review |
+| `executing-plans` | Plan ready (alt) | Batch execution with human checkpoints |
+| `test-driven-development` | Implementation | RED → GREEN → REFACTOR |
+| `systematic-debugging` | Bug found | 4-phase root cause analysis |
+| `requesting-code-review` | Task complete | Dispatch reviewer droid |
+| `receiving-code-review` | PR feedback | Rigorous response to review |
+| `verification-before-completion` | Claiming "done" | Evidence before assertions |
+| `finishing-a-development-branch` | All tasks done | Merge / PR / keep / discard |
+| `dispatching-parallel-agents` | 2+ independent tasks | Concurrent droid dispatch |
+| `writing-skills` | Creating skills | Authoring best practices |
+| `using-superpowers` | Every session | Routing layer |
 
-Tell Codex:
+[Skills reference →](docs/droid/03-skills-reference.md)
 
-```
-Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.codex/INSTALL.md
-```
+## Droids
 
-**Detailed docs:** [docs/README.codex.md](docs/README.codex.md)
+5 tool-restricted agent definitions:
 
-### OpenCode
+| Droid | `tools` | `reasoningEffort` | Role |
+|-------|---------|-------------------|------|
+| `code-reviewer` | `read-only` | `high` | Final review against plan |
+| `spec-reviewer` | `read-only` | `high` | Verify impl matches spec |
+| `code-quality-reviewer` | `read-only` | `high` | Quality after spec passes |
+| `plan-reviewer` | `read-only` | `high` | Review plans before execution |
+| `implementer` | full | `medium` | Execute individual tasks |
 
-Tell OpenCode:
+Reviewers **cannot modify code** — `tools: read-only` restricts them to `Read`, `Grep`, `Glob`, `LS`.
 
-```
-Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.opencode/INSTALL.md
-```
+[Droids reference →](docs/droid/04-droids-reference.md)
 
-**Detailed docs:** [docs/README.opencode.md](docs/README.opencode.md)
+## Documentation
 
-### Gemini CLI
+| Doc | Content |
+|-----|---------|
+| [docs/droid/01-why-this-fork.md](docs/droid/01-why-this-fork.md) | Motivation, full changelog |
+| [docs/droid/02-architecture.md](docs/droid/02-architecture.md) | System design, file layout, tool mapping |
+| [docs/droid/03-skills-reference.md](docs/droid/03-skills-reference.md) | All 14 skills with triggers and dependencies |
+| [docs/droid/04-droids-reference.md](docs/droid/04-droids-reference.md) | All 5 droids with frontmatter and behavior |
+| [docs/droid/05-vs-native-subagents.md](docs/droid/05-vs-native-subagents.md) | Superpowers vs. Droid's built-in `Task` tool |
+| [docs/droid/06-installation.md](docs/droid/06-installation.md) | Install, uninstall, re-install, configuration |
 
-```bash
-gemini extensions install https://github.com/obra/superpowers
-```
+## Credits
 
-To update:
+Built on [superpowers](https://github.com/obra/superpowers) by [@obra](https://github.com/obra) (Jesse Vincent).
 
-```bash
-gemini extensions update superpowers
-```
-
-### Verify Installation
-
-Start a new session in your chosen platform and ask for something that should trigger a skill (for example, "help me plan this feature" or "let's debug this issue"). The agent should automatically invoke the relevant superpowers skill.
-
-## The Basic Workflow
-
-1. **brainstorming** - Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves design document.
-
-2. **using-git-worktrees** - Activates after design approval. Creates isolated workspace on new branch, runs project setup, verifies clean test baseline.
-
-3. **writing-plans** - Activates with approved design. Breaks work into bite-sized tasks (2-5 minutes each). Every task has exact file paths, complete code, verification steps.
-
-4. **subagent-driven-development** or **executing-plans** - Activates with plan. Dispatches fresh subagent per task with two-stage review (spec compliance, then code quality), or executes in batches with human checkpoints.
-
-5. **test-driven-development** - Activates during implementation. Enforces RED-GREEN-REFACTOR: write failing test, watch it fail, write minimal code, watch it pass, commit. Deletes code written before tests.
-
-6. **requesting-code-review** - Activates between tasks. Reviews against plan, reports issues by severity. Critical issues block progress.
-
-7. **finishing-a-development-branch** - Activates when tasks complete. Verifies tests, presents options (merge/PR/keep/discard), cleans up worktree.
-
-**The agent checks for relevant skills before any task.** Mandatory workflows, not suggestions.
-
-## What's Inside
-
-### Skills Library
-
-**Testing**
-- **test-driven-development** - RED-GREEN-REFACTOR cycle (includes testing anti-patterns reference)
-
-**Debugging**
-- **systematic-debugging** - 4-phase root cause process (includes root-cause-tracing, defense-in-depth, condition-based-waiting techniques)
-- **verification-before-completion** - Ensure it's actually fixed
-
-**Collaboration** 
-- **brainstorming** - Socratic design refinement
-- **writing-plans** - Detailed implementation plans
-- **executing-plans** - Batch execution with checkpoints
-- **dispatching-parallel-agents** - Concurrent subagent workflows
-- **requesting-code-review** - Pre-review checklist
-- **receiving-code-review** - Responding to feedback
-- **using-git-worktrees** - Parallel development branches
-- **finishing-a-development-branch** - Merge/PR decision workflow
-- **subagent-driven-development** - Fast iteration with two-stage review (spec compliance, then code quality)
-
-**Meta**
-- **writing-skills** - Create new skills following best practices (includes testing methodology)
-- **using-superpowers** - Introduction to the skills system
-
-## Philosophy
-
-- **Test-Driven Development** - Write tests first, always
-- **Systematic over ad-hoc** - Process over guessing
-- **Complexity reduction** - Simplicity as primary goal
-- **Evidence over claims** - Verify before declaring success
-
-Read more: [Superpowers for Claude Code](https://blog.fsck.com/2025/10/09/superpowers/)
-
-## Contributing
-
-Skills live directly in this repository. To contribute:
-
-1. Fork the repository
-2. Create a branch for your skill
-3. Follow the `writing-skills` skill for creating and testing new skills
-4. Submit a PR
-
-See `skills/writing-skills/SKILL.md` for the complete guide.
-
-## Updating
-
-Skills update automatically when you update the plugin:
-
-```bash
-/plugin update superpowers
-```
+Read the original blog post: [Superpowers for Claude Code](https://blog.fsck.com/2025/10/09/superpowers/)
 
 ## License
 
-MIT License - see LICENSE file for details
-
-## Support
-
-- **Issues**: https://github.com/obra/superpowers/issues
-- **Marketplace**: https://github.com/obra/superpowers-marketplace
+MIT — see [LICENSE](LICENSE)

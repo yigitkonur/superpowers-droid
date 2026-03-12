@@ -1,6 +1,6 @@
 # Code Quality Reviewer Prompt Template
 
-Use this template when dispatching a code quality reviewer subagent.
+Use this template when dispatching a code quality reviewer droid.
 
 **Purpose:** Verify implementation is well-built (clean, tested, maintainable)
 

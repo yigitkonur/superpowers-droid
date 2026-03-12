@@ -1,6 +1,6 @@
-# Implementer Subagent Prompt Template
+# Implementer Droid Prompt Template
 
-Use this template when dispatching an implementer subagent.
+Use this template when dispatching an implementer droid.
 
 ```
 Task tool (general-purpose):
@@ -10,7 +10,7 @@ Task tool (general-purpose):
 
     ## Task Description
 
-    [FULL TEXT of task from plan - paste it here, don't make subagent read file]
+    [FULL TEXT of task from plan - paste it here, don't make droid read file]
 
     ## Context
 

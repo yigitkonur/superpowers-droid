@@ -48,7 +48,7 @@ Save `screen_dir` from the response. Tell user to open the URL.
 
 **Launching the server by platform:**
 
-**Claude Code:**
+**Factory Droid:**
 ```bash
 # Default mode works — the script backgrounds the server itself
 scripts/start-server.sh --project-dir /path/to/project

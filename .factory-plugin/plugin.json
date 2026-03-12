@@ -1,0 +1,13 @@
+{
+  "name": "superpowers",
+  "description": "Core skills library for Factory Droid: TDD, debugging, subagent-driven development, collaboration patterns, and proven techniques",
+  "version": "5.0.1-droid.1",
+  "author": {
+    "name": "Yigit Konur (fork of Jesse Vincent's obra/superpowers)",
+    "email": "jesse@fsck.com"
+  },
+  "homepage": "https://github.com/obra/superpowers",
+  "repository": "https://github.com/obra/superpowers",
+  "license": "MIT",
+  "keywords": ["skills", "tdd", "debugging", "collaboration", "best-practices", "workflows", "droid", "factory"]
+}
