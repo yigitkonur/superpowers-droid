@@ -6,8 +6,23 @@
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/yigitkonur/superpowers-droid/main/install.sh)"
 ```
 
-The installer is interactive — it will ask where to install and show progress for
-each step.
+The installer is interactive — it will ask where to install and show progress for each step.
+
+## How the installer works
+
+When the Droid CLI is available (recommended), the installer uses the **plugin system**:
+
+1. Registers the superpowers-droid marketplace:
+   `droid plugin marketplace add https://github.com/yigitkonur/superpowers-droid.git`
+2. Installs the plugin:
+   `droid plugin install superpowers@superpowers-droid --scope user`
+3. Appends a superpowers workflow block to `AGENTS.md`
+
+The plugin is cached at `~/.factory/plugins/cache/superpowers-droid/superpowers/<hash>/`.
+
+When Droid CLI is **not** available, falls back to:
+1. `git clone` to `~/.factory/superpowers-droid/`
+2. `AGENTS.md` injection for skill routing
 
 ## Install options
 
@@ -23,8 +38,6 @@ node scripts/install.mjs
 node scripts/install.mjs --user
 ```
 
-Installs to `~/.factory/superpowers-droid/`.
-
 ### Project-level
 
 Available only in the current project:
@@ -33,14 +46,14 @@ Available only in the current project:
 node scripts/install.mjs --project
 ```
 
-Installs to `./.factory/superpowers-droid/`.
-
 ### Manual
 
 ```bash
 git clone https://github.com/yigitkonur/superpowers-droid ~/.factory/superpowers-droid
 chmod +x ~/.factory/superpowers-droid/hooks/*
 ```
+
+Note: manual installs require adding a routing block to your AGENTS.md (see Configuration below).
 
 ## Uninstall
 
@@ -54,14 +67,14 @@ node scripts/install.mjs --uninstall --project
 ```
 
 The uninstaller:
-1. Removes the plugin directory
-2. Cleans the superpowers block from `AGENTS.md` (if present)
-3. Leaves everything else untouched
+1. Removes the plugin via `droid plugin uninstall` (or removes cloned directory for manual installs)
+2. Removes the marketplace registration
+3. Cleans the superpowers block from `AGENTS.md` (preserves other content)
 
 ## Re-install safety
 
 The installer is idempotent. Running it again when superpowers is already installed
-will prompt:
+will either auto-update (non-interactive mode) or prompt:
 
 ```
 ? Superpowers is already installed. What would you like to do?
@@ -70,10 +83,19 @@ will prompt:
     3. Cancel — do nothing
 ```
 
-No data loss on double-install. The **Update** option runs `git pull --ff-only`.
-The **Reinstall** option removes the directory completely and clones fresh.
+No data loss on double-install.
+
+**Safety guard**: The installer will refuse to delete directories that contain the
+running script or match the current working directory.
 
 ## Verify installation
+
+Check plugin status:
+
+```bash
+droid plugin list
+# Should show: superpowers@superpowers-droid  [user]  <hash>
+```
 
 Start a new Droid session:
 
@@ -81,7 +103,7 @@ Start a new Droid session:
 droid
 ```
 
-The `SessionStart` hook should inject superpowers context. Browse available skills:
+Browse available skills:
 
 ```
 /skills
@@ -101,10 +123,16 @@ The `brainstorming` skill should activate automatically.
 |------|----------|-------|
 | `git` | Yes | For cloning the repo |
 | `node` | Yes (>=18) | For the interactive installer |
-| `droid` | Recommended | Superpowers installs without it, but won't activate |
+| `droid` | Recommended | Plugin system install; falls back to manual clone without it |
 
 ## Updating
 
+With plugin system install:
+```bash
+droid plugin update superpowers@superpowers-droid
+```
+
+With manual install:
 ```bash
 cd ~/.factory/superpowers-droid && git pull
 ```
@@ -115,18 +143,22 @@ Or re-run the installer — it will detect the existing install and offer to upd
 
 ### AGENTS.md
 
-The installer can add a superpowers routing block to `~/.factory/AGENTS.md`.
-This tells Droid to check for applicable skills before every task.
+The installer adds a superpowers routing block to `~/.factory/AGENTS.md` (user-level)
+or `./AGENTS.md` (project-level). This tells Droid to check for applicable skills.
 
 If you prefer manual control, add this to your AGENTS.md:
 
 ```markdown
+<!-- superpowers:start -->
 ## Superpowers Workflow
 
 Before responding to ANY task, check for applicable superpowers skills.
 Skills auto-activate when your task matches their description, or browse
 with `/skills`.
+<!-- superpowers:end -->
 ```
+
+The sentinel comments (`<!-- superpowers:start/end -->`) are required for clean uninstall.
 
 ### Hooks
 

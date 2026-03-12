@@ -93,6 +93,13 @@ Skills reference Claude Code tool names as the canonical form. In Droid:
 
 Droid-only tools: `LS`, `ApplyPatch`, `AskUser`, `Create-PR`.
 
+### Missing primitives (no Droid equivalent)
+
+| Claude Code primitive | Droid status | Workaround |
+|---|---|---|
+| `Skill` tool (explicit invocation) | Not available | Skills auto-activate via description matching; `/skills` to browse |
+| `EnterPlanMode` tool | Not available | `brainstorming` skill activates automatically for creative work |
+
 ## Droid lifecycle per task
 
 ```
@@ -138,9 +145,13 @@ Droid-only tools: `LS`, `ApplyPatch`, `AskUser`, `Create-PR`.
 ## File layout
 
 ```
-~/.factory/superpowers-droid/
+~/.factory/plugins/cache/superpowers-droid/superpowers/<hash>/
+# (or ~/.factory/superpowers-droid/ for manual installs)
 ├── .factory-plugin/
-│   └── plugin.json              # Droid plugin manifest
+│   ├── plugin.json              # Droid plugin manifest
+│   └── marketplace.json         # Marketplace definition
+├── .claude-plugin/
+│   └── marketplace.json         # Backward-compatible marketplace
 ├── droids/
 │   ├── code-reviewer.md         # read-only, high reasoning
 │   ├── spec-reviewer.md         # read-only, high reasoning

@@ -99,26 +99,34 @@ Droid's built-in `Task` tool dispatches sub-agents. Superpowers adds the **workf
 
 ## Install / uninstall
 
-**One-liner** (macOS):
+**One-liner** (macOS, interactive):
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/yigitkonur/superpowers-droid/main/install.sh)"
 ```
 
-**Uninstall:**
+**Non-interactive** (scriptable):
 
 ```bash
-node ~/.factory/superpowers-droid/scripts/install.mjs --uninstall
+# User-level (all Droid sessions)
+node scripts/install.mjs --user
+
+# Project-level (this project only)
+node scripts/install.mjs --project
+
+# Uninstall
+node scripts/install.mjs --uninstall --user
 ```
 
-**Manual:**
+**What the installer does:**
 
-```bash
-git clone https://github.com/yigitkonur/superpowers-droid ~/.factory/superpowers-droid
-chmod +x ~/.factory/superpowers-droid/hooks/*
-```
+1. Registers the superpowers-droid marketplace: `droid plugin marketplace add <url>`
+2. Installs the plugin: `droid plugin install superpowers@superpowers-droid --scope user`
+3. Adds a superpowers workflow block to `~/.factory/AGENTS.md` (or project `AGENTS.md`)
 
-The Node.js installer is interactive, shows progress per step, and is idempotent — safe for re-installs with update/reinstall/cancel options.
+If the Droid CLI is not available, falls back to manual clone + `AGENTS.md` injection.
+
+Idempotent — safe to re-run. Detects existing installs and offers update/reinstall/cancel.
 
 [Installation guide →](docs/droid/06-installation.md)
 
@@ -171,6 +179,17 @@ Reviewers **cannot modify code** — `tools: read-only` restricts them to `Read`
 | [docs/droid/04-droids-reference.md](docs/droid/04-droids-reference.md) | All 5 droids with frontmatter and behavior |
 | [docs/droid/05-vs-native-subagents.md](docs/droid/05-vs-native-subagents.md) | Superpowers vs. Droid's built-in `Task` tool |
 | [docs/droid/06-installation.md](docs/droid/06-installation.md) | Install, uninstall, re-install, configuration |
+
+## Known limitations
+
+This fork is a near-complete port. Two upstream primitives have no direct Droid equivalent:
+
+| Missing | Impact | Workaround |
+|---------|--------|------------|
+| `Skill` tool (explicit invocation) | Can't call skills by tool name mid-conversation | Skills auto-activate by description matching. Users can browse with `/skills`. |
+| `EnterPlanMode` tool | No dedicated plan-mode UI transition | `brainstorming` skill triggers automatically when creative work is detected. Plans are written to `docs/superpowers/plans/`. |
+
+Everything else maps 1:1. See [docs/droid/02-architecture.md](docs/droid/02-architecture.md) for the full tool mapping table.
 
 ## Credits
 
