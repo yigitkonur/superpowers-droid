@@ -1,8 +1,8 @@
-# Skills Reference
+# skills reference
 
 All 14 skills, their triggers, and how they connect.
 
-## Workflow skills (ordered pipeline)
+## workflow skills (ordered pipeline)
 
 | # | Skill | Activates when | What it does |
 |---|-------|---------------|--------------|
@@ -16,7 +16,7 @@ All 14 skills, their triggers, and how they connect.
 | 7 | `verification-before-completion` | About to claim "done" | Run tests fresh, read output, then claim. Evidence before assertions |
 | 8 | `finishing-a-development-branch` | All tasks complete | Verify tests → present 4 options: merge / PR / keep / discard |
 
-## Support skills
+## support skills
 
 | Skill | Activates when | What it does |
 |-------|---------------|--------------|
@@ -26,7 +26,7 @@ All 14 skills, their triggers, and how they connect.
 | `using-superpowers` | Every conversation start | Routing layer: checks all skills against current task |
 | `writing-skills` | Creating or editing skills | Skill authoring best practices and testing methodology |
 
-## Skill activation flow
+## skill activation flow
 
 ```
 User message received
@@ -54,7 +54,7 @@ User message received
  per item  directly
 ```
 
-## Skill dependencies
+## skill dependencies
 
 ```
 brainstorming
@@ -74,7 +74,7 @@ brainstorming
                               finishing-a-development-branch
 ```
 
-## Iron laws
+## iron laws
 
 These are enforced across all skills — no exceptions:
 

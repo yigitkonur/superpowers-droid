@@ -1,6 +1,6 @@
-# Architecture
+# architecture
 
-## How superpowers works
+## how superpowers works
 
 Skills auto-activate based on task context. A `SessionStart` hook injects routing
 instructions, and each skill declares when it should fire via its `description` field.
@@ -33,7 +33,7 @@ instructions, and each skill declares when it should fire via its `description` 
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-## Original vs. this fork
+## original vs. this fork
 
 ```
 ORIGINAL (Claude Code)                  THIS FORK (Factory Droid)
@@ -75,7 +75,7 @@ ORIGINAL (Claude Code)                  THIS FORK (Factory Droid)
 └─────────────────────┘                └─────────────────────────┘
 ```
 
-## Tool name mapping
+## tool name mapping
 
 Skills reference Claude Code tool names as the canonical form. In Droid:
 
@@ -93,14 +93,14 @@ Skills reference Claude Code tool names as the canonical form. In Droid:
 
 Droid-only tools: `LS`, `ApplyPatch`, `AskUser`, `Create-PR`.
 
-### Missing primitives (no Droid equivalent)
+### missing primitives (no Droid equivalent)
 
 | Claude Code primitive | Droid status | Workaround |
 |---|---|---|
 | `Skill` tool (explicit invocation) | Not available | Skills auto-activate via description matching; `/skills` to browse |
 | `EnterPlanMode` tool | Not available | `brainstorming` skill activates automatically for creative work |
 
-## Droid lifecycle per task
+## droid lifecycle per task
 
 ```
           implementer droid
@@ -142,7 +142,7 @@ Droid-only tools: `LS`, `ApplyPatch`, `AskUser`, `Create-PR`.
                           ❌ issues  ──→ implementer fixes
 ```
 
-## File layout
+## file layout
 
 ```
 ~/.factory/plugins/cache/superpowers-droid/superpowers/<hash>/

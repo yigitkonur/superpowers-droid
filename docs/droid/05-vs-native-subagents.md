@@ -1,9 +1,9 @@
-# Superpowers vs. Droid's Native Sub-Agent System
+# superpowers vs. Droid's native sub-agent system
 
 Factory Droid has a built-in `Task` tool for dispatching sub-agents. This document
 explains why superpowers adds value on top of it.
 
-## What Droid gives you natively
+## what Droid gives you natively
 
 ```
 ┌─────────────────────────────────────┐
@@ -29,7 +29,7 @@ results, and returns output. It doesn't tell you:
 - When to escalate vs. retry
 - How to maintain quality across a multi-task implementation
 
-## What superpowers adds
+## what superpowers adds
 
 ```
 ┌─────────────────────────────────────┐
@@ -51,7 +51,7 @@ results, and returns output. It doesn't tell you:
 └─────────────────────────────────────┘
 ```
 
-## Side-by-side comparison
+## side-by-side comparison
 
 ```
 Native Droid only                    With Superpowers
@@ -87,7 +87,7 @@ Claims "done"                        → SubagentStop hook reminds workflow
                                      → Tests pass → Create-PR
 ```
 
-## Key differences
+## key differences
 
 | Aspect | Native only | With superpowers |
 |--------|------------|-----------------|
@@ -102,7 +102,7 @@ Claims "done"                        → SubagentStop hook reminds workflow
 | Escalation | None | BLOCKED / NEEDS_CONTEXT status codes |
 | Quality gates | None | Must pass spec + quality before next task |
 
-## When superpowers matters most
+## when superpowers matters most
 
 - **Multi-task features** — Without workflow discipline, context pollution causes
   later tasks to fail or deviate.
@@ -111,7 +111,7 @@ Claims "done"                        → SubagentStop hook reminds workflow
 - **Production code** — TDD + verification-before-completion means you can trust
   the output.
 
-## When native is enough
+## when native is enough
 
 - **One-off scripts** — Quick tasks that don't need review or testing discipline.
 - **Exploration** — Research tasks where you're reading, not writing.

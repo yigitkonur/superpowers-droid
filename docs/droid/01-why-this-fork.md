@@ -1,4 +1,4 @@
-# Why This Fork Exists
+# why this fork exists
 
 [obra/superpowers](https://github.com/obra/superpowers) by [@obra](https://github.com/obra) is a
 complete software development workflow for coding agents — TDD, debugging, subagent-driven
@@ -8,7 +8,7 @@ The original targets **Claude Code** and its plugin system. This fork adapts sup
 **[Factory Droid](https://www.factory.ai/)** — a coding CLI that shares the same agent architecture
 but exposes capabilities Claude Code doesn't have.
 
-## What Factory Droid adds
+## what Factory Droid adds
 
 | Capability | Claude Code | Factory Droid |
 |------------|-------------|---------------|
@@ -20,9 +20,9 @@ but exposes capabilities Claude Code doesn't have.
 | After-completion hooks | Not available | `SubagentStop` hook event |
 | Agent definitions | `agents/*.md` | `droids/*.md` with metadata |
 
-## What changed in this fork
+## what changed in this fork
 
-### Structural
+### structural
 
 - `.claude-plugin/` → `.factory-plugin/` (Droid plugin manifest)
 - `agents/` → `droids/` with `tools`, `reasoningEffort`, and `model` frontmatter
@@ -30,7 +30,7 @@ but exposes capabilities Claude Code doesn't have.
 - Removed: deprecated `commands/` directory
 - Removed: Claude Code / Codex / OpenCode / Gemini specific tests and docs
 
-### Droids (new)
+### droids (new)
 
 Five tool-restricted droid definitions replace the single generic `code-reviewer` agent:
 
@@ -42,12 +42,12 @@ Five tool-restricted droid definitions replace the single generic `code-reviewer
 | `plan-reviewer` | read-only | high | Review plans before execution |
 | `implementer` | full | medium | Execute tasks from plan |
 
-### Hooks
+### hooks
 
 - `SessionStart` — updated for `DROID_PLUGIN_ROOT` detection
 - `SubagentStop` — **new** — auto-injects review workflow reminder after any droid completes
 
-### Skills (all 14)
+### skills (all 14)
 
 Every skill updated:
 - Tool name references canonicalized (see [02-architecture.md](02-architecture.md))
@@ -58,10 +58,14 @@ Every skill updated:
 - `using-git-worktrees` — enhanced with native `droid --worktree`
 - `using-superpowers` — rewritten for Droid skill auto-activation
 
-### Installer
+### installer
 
 New interactive Node.js installer with:
 - User-level or project-level install
 - Idempotent (safe for re-installs)
 - Clean uninstall
 - macOS one-liner support
+
+---
+
+also ported to codex cli: [superpowers-codex](https://github.com/yigitkonur/superpowers-codex)

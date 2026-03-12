@@ -1,0 +1,27 @@
+{
+  "name": "superpowers-droid",
+  "version": "5.0.1-droid.1",
+  "description": "structured agentic workflows for Factory Droid — fork of obra/superpowers",
+  "bin": {
+    "superpowers-droid": "./scripts/install.mjs"
+  },
+  "keywords": ["factory-droid", "superpowers", "skills", "tdd", "code-review", "agentic", "workflow"],
+  "author": "Yigit Konur (https://github.com/yigitkonur)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yigitkonur/superpowers-droid.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "scripts/install.mjs",
+    "skills/",
+    "droids/",
+    "hooks/",
+    "install.sh",
+    "LICENSE",
+    "README.md"
+  ]
+}

@@ -1,6 +1,6 @@
-# Installation
+# installation
 
-## Quick install (macOS)
+## quick install (macOS)
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/yigitkonur/superpowers-droid/main/install.sh)"
@@ -8,7 +8,7 @@
 
 The installer is interactive — it will ask where to install and show progress for each step.
 
-## How the installer works
+## how the installer works
 
 When the Droid CLI is available (recommended), the installer uses the **plugin system**:
 
@@ -24,9 +24,9 @@ When Droid CLI is **not** available, falls back to:
 1. `git clone` to `~/.factory/superpowers-droid/`
 2. `AGENTS.md` injection for skill routing
 
-## Install options
+## install options
 
-### User-level (recommended)
+### user-level (recommended)
 
 Available in all Droid sessions across all projects:
 
@@ -38,7 +38,7 @@ node scripts/install.mjs
 node scripts/install.mjs --user
 ```
 
-### Project-level
+### project-level
 
 Available only in the current project:
 
@@ -46,7 +46,7 @@ Available only in the current project:
 node scripts/install.mjs --project
 ```
 
-### Manual
+### manual
 
 ```bash
 git clone https://github.com/yigitkonur/superpowers-droid ~/.factory/superpowers-droid
@@ -55,7 +55,7 @@ chmod +x ~/.factory/superpowers-droid/hooks/*
 
 Note: manual installs require adding a routing block to your AGENTS.md (see Configuration below).
 
-## Uninstall
+## uninstall
 
 ```bash
 # interactive
@@ -71,7 +71,7 @@ The uninstaller:
 2. Removes the marketplace registration
 3. Cleans the superpowers block from `AGENTS.md` (preserves other content)
 
-## Re-install safety
+## re-install safety
 
 The installer is idempotent. Running it again when superpowers is already installed
 will either auto-update (non-interactive mode) or prompt:
@@ -88,7 +88,7 @@ No data loss on double-install.
 **Safety guard**: The installer will refuse to delete directories that contain the
 running script or match the current working directory.
 
-## Verify installation
+## verify installation
 
 Check plugin status:
 
@@ -117,7 +117,7 @@ Help me plan a new feature
 
 The `brainstorming` skill should activate automatically.
 
-## Prerequisites
+## prerequisites
 
 | Tool | Required | Notes |
 |------|----------|-------|
@@ -125,7 +125,7 @@ The `brainstorming` skill should activate automatically.
 | `node` | Yes (>=18) | For the interactive installer |
 | `droid` | Recommended | Plugin system install; falls back to manual clone without it |
 
-## Updating
+## updating
 
 With plugin system install:
 ```bash
@@ -139,7 +139,7 @@ cd ~/.factory/superpowers-droid && git pull
 
 Or re-run the installer — it will detect the existing install and offer to update.
 
-## Configuration
+## configuration
 
 ### AGENTS.md
 
@@ -160,7 +160,7 @@ with `/skills`.
 
 The sentinel comments (`<!-- superpowers:start/end -->`) are required for clean uninstall.
 
-### Hooks
+### hooks
 
 Hooks are configured in `hooks/hooks.json` and reference `DROID_PLUGIN_ROOT`:
 

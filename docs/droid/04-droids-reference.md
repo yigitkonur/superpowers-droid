@@ -1,9 +1,9 @@
-# Droids Reference
+# droids reference
 
 Droids are tool-restricted agent definitions in `droids/*.md`. Each has frontmatter
 controlling its capabilities.
 
-## Frontmatter fields
+## frontmatter fields
 
 | Field | Values | Effect |
 |-------|--------|--------|
@@ -11,7 +11,7 @@ controlling its capabilities.
 | `reasoningEffort` | `low` / `medium` / `high` | Controls depth of analysis |
 | `model` | `inherit` / specific model | Which model to use |
 
-## Droid definitions
+## droid definitions
 
 ### `code-reviewer`
 
@@ -125,7 +125,7 @@ the feature end-to-end.
 **Key behavior:** Will escalate (`BLOCKED`) rather than produce uncertain work. Medium
 reasoning keeps it fast for straightforward tasks.
 
-## Review chain
+## review chain
 
 ```
 implementer ──→ spec-reviewer ──→ code-quality-reviewer

@@ -8,11 +8,16 @@
  *
  * Usage:
  *   node scripts/install.mjs                  # interactive
- *   node scripts/install.mjs --user           # user-level, no prompts
- *   node scripts/install.mjs --project        # project-level, no prompts
- *   node scripts/install.mjs --uninstall      # remove superpowers
- *   node scripts/install.mjs --uninstall --user
- *   node scripts/install.mjs --uninstall --project
+ *   node scripts/install.mjs install          # same as above
+ *   node scripts/install.mjs install --user   # user-level, no prompts
+ *   node scripts/install.mjs install --project# project-level, no prompts
+ *   node scripts/install.mjs uninstall        # remove superpowers
+ *   node scripts/install.mjs uninstall --user
+ *   node scripts/install.mjs uninstall --project
+ *   node scripts/install.mjs status           # show install state
+ *   node scripts/install.mjs --status         # same as status
+ *   node scripts/install.mjs --uninstall      # same as uninstall
+ *   node scripts/install.mjs --help           # show help
  */
 
 import { execSync } from "node:child_process";
@@ -74,6 +79,7 @@ const c = {
 const ok   = (msg) => console.log(`  ${c.green}✓${c.reset} ${msg}`);
 const warn = (msg) => console.log(`  ${c.yellow}⚠${c.reset} ${msg}`);
 const fail = (msg) => console.log(`  ${c.red}✗${c.reset} ${msg}`);
+const info = (msg) => console.log(`  ${c.cyan}→${c.reset} ${msg}`);
 const step = (n, total, msg) =>
   console.log(`\n${c.cyan}[${n}/${total}]${c.reset} ${c.bold}${msg}${c.reset}`);
 const banner = (msg) =>
@@ -347,10 +353,77 @@ function removeFromAgentsMd(scope) {
   }
 }
 
+// ── status ─────────────────────────────────────────────────────────────────────
+
+function status() {
+  banner("superpowers-droid — status");
+
+  // droid cli
+  if (hasDroid()) {
+    ok(`droid cli: ${getVersion("droid --version") || "available"}`);
+  } else {
+    warn("droid cli: not found");
+  }
+
+  // plugin install
+  if (isDroidPluginInstalled()) {
+    ok("plugin install: superpowers@superpowers-droid (active)");
+  } else {
+    info("plugin install: not installed");
+  }
+
+  // manual install
+  const manual = findManualInstall("user");
+  if (manual) {
+    ok(`manual install: ${manual}`);
+  } else {
+    info("manual install: not found");
+  }
+
+  // AGENTS.md
+  const agentsPath = join(HOME, ".factory", "AGENTS.md");
+  if (existsSync(agentsPath)) {
+    const content = readFileSync(agentsPath, "utf8");
+    if (content.includes(SUPERPOWERS_BLOCK_START)) {
+      ok("AGENTS.md: superpowers block present");
+    } else {
+      warn("AGENTS.md: exists but no superpowers block");
+    }
+  } else {
+    info("AGENTS.md: not found");
+  }
+
+  console.log();
+}
+
+// ── help ───────────────────────────────────────────────────────────────────────
+
+function printHelp() {
+  console.log(`
+${c.bold}superpowers-droid${c.reset} — structured agentic workflows for Factory Droid
+
+${c.bold}usage:${c.reset}
+  npx superpowers-droid install              interactive install
+  npx superpowers-droid install --user       user-level, no prompts
+  npx superpowers-droid install --project    project-level, no prompts
+  npx superpowers-droid uninstall --user     remove user-level install
+  npx superpowers-droid uninstall --project  remove project-level install
+  npx superpowers-droid status              show current install state
+
+${c.bold}also works with flags:${c.reset}
+  node scripts/install.mjs --user           same as install --user
+  node scripts/install.mjs --uninstall      same as uninstall
+  node scripts/install.mjs --status         same as status
+
+${c.bold}more info:${c.reset}
+  https://github.com/yigitkonur/superpowers-droid
+`);
+}
+
 // ── install flow ───────────────────────────────────────────────────────────────
 
 async function install(scope, nonInteractive = false) {
-  banner("superpowers-droid installer");
+  banner("superpowers-droid — installer");
   console.log(`${c.dim}Scope: ${scope}-level${nonInteractive ? " (non-interactive)" : ""}${c.reset}`);
 
   // Check for existing install
@@ -421,26 +494,27 @@ async function install(scope, nonInteractive = false) {
   addToAgentsMd(scope);
 
   // Done
-  banner("Done!");
-  const installPath = installDir.startsWith("(") ? installDir : installDir;
-  console.log(`
-  Superpowers installed: ${c.cyan}${installPath}${c.reset}
-
-  Start a new Droid session to activate:
-    ${c.bold}droid${c.reset}
-
-  Browse skills:
-    ${c.bold}/skills${c.reset}
-
-  Use native worktree isolation:
-    ${c.bold}droid --worktree feature-name${c.reset}
-`);
+  banner("superpowers installed");
+  const installPath = installDir;
+  const skillsDir = usedPluginSystem ? null : join(installDir, "skills");
+  const skillCount = skillsDir && existsSync(skillsDir)
+    ? readdirSync(skillsDir).filter(d => existsSync(join(skillsDir, d, "SKILL.md"))).length
+    : 14;
+  console.log();
+  console.log(`  location:   ${c.cyan}${installPath}${c.reset}`);
+  console.log(`  skills:     ${c.cyan}${skillCount}${c.reset} loaded`);
+  console.log();
+  console.log(`  next steps:`);
+  console.log(`    start a new droid session`);
+  console.log(`    ask it to build something — brainstorming fires automatically`);
+  console.log(`    browse skills with ${c.cyan}/skills${c.reset}`);
+  console.log();
 }
 
 // ── uninstall flow ─────────────────────────────────────────────────────────────
 
 async function uninstall(scope, nonInteractive = false) {
-  banner("superpowers-droid uninstaller");
+  banner("superpowers-droid — uninstaller");
 
   const existing = findAnyInstall(scope);
   if (!existing) {
@@ -486,24 +560,33 @@ async function uninstall(scope, nonInteractive = false) {
 
 async function main() {
   const args = process.argv.slice(2);
-  const isUninstall = args.includes("--uninstall");
+
+  // Determine command (positional or flag)
+  let command = "install"; // default
+  if (args[0] === "install" || args[0] === "uninstall" || args[0] === "status" || args[0] === "--help" || args[0] === "-h") {
+    command = args[0].replace(/^--?/, "");
+    // don't shift — flags still parsed from full args
+  }
+  if (args.includes("--uninstall")) command = "uninstall";
+  if (args.includes("--status")) command = "status";
+  if (args.includes("--help") || args.includes("-h")) command = "help";
+
   const hasExplicitScope = args.includes("--user") || args.includes("--project");
-  let scope = args.includes("--user") ? "user"
-    : args.includes("--project") ? "project"
-    : null;
-
-  // --user / --project implies non-interactive (no TUI prompts)
   const nonInteractive = hasExplicitScope;
+  let scope = args.includes("--user") ? "user" : args.includes("--project") ? "project" : null;
 
-  if (!scope) {
-    const answer = await ask("Where should superpowers be installed?", [
-      { label: "User-level", desc: "Available in all Droid sessions (recommended)" },
-      { label: "Project-level", desc: "Only this project" },
+  if (command === "help") { printHelp(); return; }
+  if (command === "status") { status(); return; }
+
+  if (!scope && command !== "status") {
+    const answer = await ask("where should superpowers be installed?", [
+      { label: "user-level", desc: "available in all sessions (recommended)" },
+      { label: "project-level", desc: "only this project" },
     ]);
     scope = answer === "1" || answer.toLowerCase().includes("user") ? "user" : "project";
   }
 
-  if (isUninstall) await uninstall(scope, nonInteractive);
+  if (command === "uninstall") await uninstall(scope, nonInteractive);
   else await install(scope, nonInteractive);
 }
 
