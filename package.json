@@ -1,6 +1,6 @@
 {
   "name": "superpowers-droid",
-  "version": "5.0.1-droid.1",
+  "version": "5.0.1",
   "description": "structured agentic workflows for Factory Droid — fork of obra/superpowers",
   "bin": {
     "superpowers-droid": "./scripts/install.mjs"

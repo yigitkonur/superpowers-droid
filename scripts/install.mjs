@@ -247,6 +247,69 @@ function isSafeToDelete(dir) {
   return true;
 }
 
+// ── plugin registry cleanup ─────────────────────────────────────────────────
+
+function cleanPluginRegistries() {
+  // Clean settings.json — remove superpowers from enabledPlugins
+  const settingsPath = join(FACTORY_DIR, "settings.json");
+  if (existsSync(settingsPath)) {
+    try {
+      const data = JSON.parse(readFileSync(settingsPath, "utf8"));
+      if (data.enabledPlugins && "superpowers@superpowers-droid" in data.enabledPlugins) {
+        delete data.enabledPlugins["superpowers@superpowers-droid"];
+        writeFileSync(settingsPath, JSON.stringify(data, null, 2) + "\n");
+        ok("Removed superpowers from settings.json enabledPlugins");
+      }
+    } catch { /* ignore parse errors */ }
+  }
+
+  // Clean installed_plugins.json — remove superpowers entry
+  if (existsSync(INSTALLED_JSON)) {
+    try {
+      const data = JSON.parse(readFileSync(INSTALLED_JSON, "utf8"));
+      if (data.plugins && "superpowers@superpowers-droid" in data.plugins) {
+        delete data.plugins["superpowers@superpowers-droid"];
+        writeFileSync(INSTALLED_JSON, JSON.stringify(data, null, 2) + "\n");
+        ok("Removed superpowers from installed_plugins.json");
+      }
+    } catch { /* ignore parse errors */ }
+  }
+
+  // Clean known_marketplaces.json — remove superpowers marketplace entries
+  if (existsSync(MARKETPLACES_JSON)) {
+    try {
+      const data = JSON.parse(readFileSync(MARKETPLACES_JSON, "utf8"));
+      let changed = false;
+      for (const key of ["superpowers-marketplace", "superpowers-droid"]) {
+        if (key in data) {
+          delete data[key];
+          changed = true;
+        }
+      }
+      if (changed) {
+        writeFileSync(MARKETPLACES_JSON, JSON.stringify(data, null, 2) + "\n");
+        ok("Removed superpowers marketplace entries from known_marketplaces.json");
+      }
+    } catch { /* ignore parse errors */ }
+  }
+
+  // Remove plugin cache directory
+  const cacheDir = join(PLUGINS_DIR, "cache", "superpowers-droid");
+  if (existsSync(cacheDir)) {
+    rmSync(cacheDir, { recursive: true, force: true });
+    ok("Removed plugin cache");
+  }
+
+  // Remove marketplace directories
+  for (const dir of ["superpowers-droid", "superpowers-marketplace"]) {
+    const mktDir = join(PLUGINS_DIR, "marketplaces", dir);
+    if (existsSync(mktDir)) {
+      rmSync(mktDir, { recursive: true, force: true });
+      ok(`Removed marketplace directory: ${dir}`);
+    }
+  }
+}
+
 // ── manual install (clone) ─────────────────────────────────────────────────────
 
 function manualClone(targetDir) {
@@ -517,12 +580,20 @@ async function uninstall(scope, nonInteractive = false) {
   banner("superpowers-droid — uninstaller");
 
   const existing = findAnyInstall(scope);
-  if (!existing) {
+  // Even if no active install found, still clean registries
+  const hasRegistryRemnants = existsSync(join(FACTORY_DIR, "settings.json")) ||
+    existsSync(INSTALLED_JSON) || existsSync(MARKETPLACES_JSON);
+
+  if (!existing && !hasRegistryRemnants) {
     warn("Superpowers is not installed — nothing to remove.");
     process.exit(0);
   }
 
-  console.log(`  ${c.dim}Found: ${existing.method} install at ${existing.path}${c.reset}`);
+  if (existing) {
+    console.log(`  ${c.dim}Found: ${existing.method} install at ${existing.path}${c.reset}`);
+  } else {
+    console.log(`  ${c.dim}No active install found, but checking for leftover config...${c.reset}`);
+  }
 
   if (!nonInteractive) {
     const confirm = await ask("Remove superpowers? (y/N)", []);
@@ -534,25 +605,33 @@ async function uninstall(scope, nonInteractive = false) {
     ok("Non-interactive mode — proceeding with removal");
   }
 
-  const totalSteps = 3;
+  const totalSteps = 4;
 
-  // [1] Remove plugin
+  // [1] Remove plugin / manual install
   step(1, totalSteps, "Removing superpowers...");
-  if (existing.method === "plugin" && hasDroid()) {
-    uninstallViaPlugin();
-  } else if (existing.path && existing.path !== "(managed by droid)") {
-    if (isSafeToDelete(existing.path)) {
-      rmSync(existing.path, { recursive: true, force: true });
-      ok(`Removed ${existing.path}`);
+  if (existing) {
+    if (existing.method === "plugin" && hasDroid()) {
+      uninstallViaPlugin();
+    } else if (existing.path && existing.path !== "(managed by droid)") {
+      if (isSafeToDelete(existing.path)) {
+        rmSync(existing.path, { recursive: true, force: true });
+        ok(`Removed ${existing.path}`);
+      }
     }
+  } else {
+    info("No active install to remove");
   }
 
   // [2] Clean AGENTS.md
   step(2, totalSteps, "Cleaning AGENTS.md...");
   removeFromAgentsMd(scope);
 
-  // [3] Done
-  step(3, totalSteps, "Cleanup complete.");
+  // [3] Clean plugin registries, cache, and marketplace dirs
+  step(3, totalSteps, "Cleaning plugin registries...");
+  cleanPluginRegistries();
+
+  // [4] Done
+  step(4, totalSteps, "Cleanup complete.");
   console.log(`\n  Superpowers has been removed.\n`);
 }
 
