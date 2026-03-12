@@ -1,0 +1,15 @@
+{
+  "name": "superpowers-droid",
+  "description": "Superpowers skills for Factory Droid — TDD, debugging, subagent-driven development, code review",
+  "owner": {
+    "name": "Yigit Konur",
+    "email": "yigit@konur.dev"
+  },
+  "plugins": [
+    {
+      "name": "superpowers",
+      "description": "Core skills library for Factory Droid: TDD, debugging, subagent-driven development, collaboration patterns, and proven techniques",
+      "source": "."
+    }
+  ]
+}
